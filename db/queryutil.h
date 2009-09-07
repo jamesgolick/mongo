@@ -160,6 +160,7 @@ namespace mongo {
             return true;
         }
         QueryPattern pattern( const BSONObj &sort = BSONObj() ) const;
+        BoundList indexBounds( const BSONObj &keyPattern, int direction ) const;
     private:
         static FieldRange *trivialRange_;
         static FieldRange &trivialRange();

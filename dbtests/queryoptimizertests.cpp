@@ -292,6 +292,14 @@ namespace QueryOptimizerTests {
             int indexno( const BSONObj &key ) {
                 return nsd()->idxNo( *index(key) );
             }
+            BSONObj startKey( const QueryPlan &p ) const {
+                BoundList bl = p.indexBounds();
+                return bl[ 0 ].first.getOwned();
+            }
+            BSONObj endKey( const QueryPlan &p ) const {
+                BoundList bl = p.indexBounds();
+                return bl[ bl.size() - 1 ].second.getOwned();
+            }
         private:
             dblock lk_;
             int indexNum_;
@@ -327,14 +335,14 @@ namespace QueryOptimizerTests {
                 
                 QueryPlan p( nsd(), INDEXNO( "a" << 1 ), FBS( BSONObj() ), BSON( "a" << 1 ) );
                 ASSERT( !p.scanAndOrderRequired() );
-                ASSERT( !p.startKey().woCompare( start ) );
-                ASSERT( !p.endKey().woCompare( end ) );
+                ASSERT( !startKey( p ).woCompare( start ) );
+                ASSERT( !endKey( p ).woCompare( end ) );
                 QueryPlan p2( nsd(), INDEXNO( "a" << 1 << "b" << 1 ), FBS( BSONObj() ), BSON( "a" << 1 << "b" << 1 ) );
                 ASSERT( !p2.scanAndOrderRequired() );
                 QueryPlan p3( nsd(), INDEXNO( "a" << 1 ), FBS( BSONObj() ), BSON( "b" << 1 ) );
                 ASSERT( p3.scanAndOrderRequired() );
-                ASSERT( !p3.startKey().woCompare( start ) );
-                ASSERT( !p3.endKey().woCompare( end ) );
+                ASSERT( !startKey( p3 ).woCompare( start ) );
+                ASSERT( !endKey( p3 ).woCompare( end ) );
             }
         };
         
@@ -375,8 +383,8 @@ namespace QueryOptimizerTests {
                 QueryPlan p( nsd(),  INDEXNO( "a" << -1 << "b" << 1 ),FBS( BSONObj() ), BSON( "a" << 1 << "b" << -1 ) );
                 ASSERT( !p.scanAndOrderRequired() );                
                 ASSERT_EQUALS( -1, p.direction() );
-                ASSERT( !p.startKey().woCompare( start ) );
-                ASSERT( !p.endKey().woCompare( end ) );
+                ASSERT( !startKey( p ).woCompare( start ) );
+                ASSERT( !endKey( p ).woCompare( end ) );
                 QueryPlan p2( nsd(), INDEXNO( "a" << 1 << "b" << 1 ), FBS( BSONObj() ), BSON( "a" << -1 << "b" << -1 ) );
                 ASSERT( !p2.scanAndOrderRequired() );                
                 ASSERT_EQUALS( -1, p2.direction() );
@@ -399,12 +407,12 @@ namespace QueryOptimizerTests {
                 BSONObj end = b2.obj();
                 QueryPlan p( nsd(), INDEXNO( "a" << -1 << "b" << 1 ), FBS( BSON( "a" << 3 ) ), BSONObj() );
                 ASSERT( !p.scanAndOrderRequired() );                
-                ASSERT( !p.startKey().woCompare( start ) );
-                ASSERT( !p.endKey().woCompare( end ) );
+                ASSERT( !startKey( p ).woCompare( start ) );
+                ASSERT( !endKey( p ).woCompare( end ) );
                 QueryPlan p2( nsd(), INDEXNO( "a" << -1 << "b" << 1 ), FBS( BSON( "a" << 3 ) ), BSONObj() );
                 ASSERT( !p2.scanAndOrderRequired() );                
-                ASSERT( !p.startKey().woCompare( start ) );
-                ASSERT( !p.endKey().woCompare( end ) );
+                ASSERT( !startKey( p ).woCompare( start ) );
+                ASSERT( !endKey( p ).woCompare( end ) );
             }            
         };
         
